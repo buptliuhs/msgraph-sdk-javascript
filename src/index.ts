@@ -24,7 +24,7 @@ export { ChaosHandlerOptions } from "./middleware/options/ChaosHandlerOptions";
 export { ChaosStrategy } from "./middleware/options/ChaosStrategy";
 export { ChaosHandler } from "./middleware/ChaosHandler";
 
-export { FileObject, LargeFileUploadSession, LargeFileUploadTask, LargeFileUploadTaskOptions, SliceType } from "./tasks/LargeFileUploadTask";
+export { FileObject, FileUploadSessionPayload, LargeFileUploadSession, LargeFileUploadTask, LargeFileUploadTaskOptions, SliceType } from "./tasks/LargeFileUploadTask";
 export { OneDriveLargeFileUploadOptions, OneDriveLargeFileUploadTask } from "./tasks/OneDriveLargeFileUploadTask";
 export { getValidRangeSize } from "./tasks/OneDriveLargeFileUploadTaskUtil";
 export { StreamUpload } from "./tasks/FileUploadTask/FileObjectClasses/StreamUpload";

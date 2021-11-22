@@ -13,7 +13,7 @@ import { GraphClientError } from "../GraphClientError";
 import { Client } from "../index";
 import { FileUpload } from "./FileUploadTask/FileObjectClasses/FileUpload";
 import { UploadEventHandlers } from "./FileUploadTask/Interfaces/IUploadEventHandlers";
-import { FileObject, LargeFileUploadSession, LargeFileUploadTask, LargeFileUploadTaskOptions } from "./LargeFileUploadTask";
+import { FileObject, FileUploadSessionPayload, LargeFileUploadSession, LargeFileUploadTask, LargeFileUploadTaskOptions } from "./LargeFileUploadTask";
 import { getValidRangeSize } from "./OneDriveLargeFileUploadTaskUtil";
 
 /**
@@ -31,21 +31,8 @@ export interface OneDriveLargeFileUploadOptions {
 	fileDescription?: string;
 	path?: string;
 	rangeSize?: number;
-	conflictBehavior?: string;
+	conflictBehavior?: "rename" | "fail" | "replace";
 	uploadEventHandlers?: UploadEventHandlers;
-}
-
-/**
- * @interface
- * Signature to define options when creating an upload task
- * @property {string} fileName - Specifies the name of a file to be uploaded (with extension)
- * @property {string} [fileDescription] - Specifies the description of the file to be uploaded
- * @property {string} [conflictBehavior] - Conflict behaviour option
- */
-interface OneDriveFileUploadSessionPayLoad {
-	fileName: string;
-	fileDescription?: string;
-	conflictBehavior?: string;
 }
 
 /**
@@ -162,10 +149,12 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 			throw new GraphClientError("Please provide the Graph client instance, FileObject interface implementation and OneDriveLargeFileUploadOptions value");
 		}
 		const requestUrl = OneDriveLargeFileUploadTask.constructCreateSessionUrl(options.fileName, options.path);
-		const uploadSessionPayload: OneDriveFileUploadSessionPayLoad = {
-			fileName: options.fileName,
-			fileDescription: options.fileDescription,
-			conflictBehavior: options.conflictBehavior,
+		const uploadSessionPayload: FileUploadSessionPayload = {
+			item: {
+				"@microsoft.graph.conflictBehavior": options.conflictBehavior || "rename",
+				description: options.fileDescription,
+				name: options.fileName,
+			},
 		};
 		const session = await OneDriveLargeFileUploadTask.createUploadSession(client, requestUrl, uploadSessionPayload);
 		const rangeSize = getValidRangeSize(options.rangeSize);
@@ -173,27 +162,6 @@ export class OneDriveLargeFileUploadTask<T> extends LargeFileUploadTask<T> {
 			rangeSize,
 			uploadEventHandlers: options.uploadEventHandlers,
 		});
-	}
-
-	/**
-	 * @public
-	 * @static
-	 * @async
-	 * Makes request to the server to create an upload session
-	 * @param {Client} client - The GraphClient instance
-	 * @param {string} requestUrl - The URL to create the upload session
-	 * @param {string} payloadOptions - The payload option. Default conflictBehavior is 'rename'
-	 * @returns The promise that resolves to LargeFileUploadSession
-	 */
-	public static async createUploadSession(client: Client, requestUrl: string, payloadOptions: OneDriveFileUploadSessionPayLoad): Promise<LargeFileUploadSession> {
-		const payload = {
-			item: {
-				"@microsoft.graph.conflictBehavior": payloadOptions?.conflictBehavior || "rename",
-				name: payloadOptions?.fileName,
-				description: payloadOptions?.fileDescription,
-			},
-		};
-		return super.createUploadSession(client, requestUrl, payload);
 	}
 
 	/**

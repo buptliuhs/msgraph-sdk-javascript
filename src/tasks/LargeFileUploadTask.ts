@@ -37,6 +37,14 @@ interface UploadStatusResponse {
 	nextExpectedRanges: string[];
 }
 
+export interface FileUploadSessionPayload {
+	item: {
+		"@microsoft.graph.conflictBehavior": "rename" | "fail" | "replace";
+		description: string;
+		name: string;
+	};
+}
+
 /**
  * @interface
  * Signature to define options for upload task
@@ -128,11 +136,11 @@ export class LargeFileUploadTask<T> {
 	 * Makes request to the server to create an upload session
 	 * @param {Client} client - The GraphClient instance
 	 * @param {string} requestUrl - The URL to create the upload session
-	 * @param {any} payload - The payload that needs to be sent
+	 * @param {FileUploadSessionPayload} payload - The payload that needs to be sent
 	 * @param {KeyValuePairObjectStringNumber} headers - The headers that needs to be sent
 	 * @returns The promise that resolves to LargeFileUploadSession
 	 */
-	public static async createUploadSession(client: Client, requestUrl: string, payload: any, headers: KeyValuePairObjectStringNumber = {}): Promise<LargeFileUploadSession> {
+	public static async createUploadSession(client: Client, requestUrl: string, payload: FileUploadSessionPayload, headers: KeyValuePairObjectStringNumber = {}): Promise<LargeFileUploadSession> {
 		const session = await client
 			.api(requestUrl)
 			.headers(headers)
